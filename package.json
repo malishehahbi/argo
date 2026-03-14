@@ -1,0 +1,53 @@
+{
+  "name": "argo-by-neorw",
+  "version": "1.0.0",
+  "description": "Arabic text support for Affinity apps",
+  "main": "main.js",
+  "author": "neorw",
+  "license": "MIT",
+  "scripts": {
+    "start": "electron .",
+    "build": "electron-builder",
+    "pack": "electron-builder --dir"
+  },
+  "dependencies": {
+    "@nut-tree-fork/nut-js": "^4.2.6",
+    "arabic-reshaper": "^1.1.0",
+    "bidi-js": "^1.0.3",
+    "electron-store": "^11.0.2"
+  },
+  "devDependencies": {
+    "electron": "^34.0.0",
+    "electron-builder": "^25.0.0"
+  },
+  "build": {
+    "appId": "com.neorw.argo",
+    "productName": "Argo by neorw",
+    "directories": {
+      "output": "dist"
+    },
+    "win": {
+      "target": "portable",
+      "icon": "assets/tray-icon.png"
+    },
+    "mac": {
+      "target": "dmg",
+      "icon": "assets/tray-icon.png",
+      "category": "public.app-category.utilities"
+    },
+    "files": [
+      "main.js",
+      "preload.js",
+      "textFixer.js",
+      "clipboardWatcher.js",
+      "automation.js",
+      "hotkeyManager.js",
+      "ui/**/*",
+      "assets/**/*",
+      "node_modules/**/*",
+      "package.json"
+    ],
+    "asar": true,
+    "compression": "maximum"
+  }
+}

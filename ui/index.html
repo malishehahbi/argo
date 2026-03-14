@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <span class="title">Argo by neorw</span>
+            <div class="window-controls">
+                <button id="pinBtn" title="Always on Top">📌</button>
+                <button id="hideBtn" title="Hide to Tray">－</button>
+            </div>
+        </header>
+        
+        <main>
+            <div class="textarea-wrapper">
+                <textarea id="inputArea" placeholder="Paste Arabic text here..."></textarea>
+                <button class="expand-btn" data-target="inputArea">⤢</button>
+            </div>
+            
+            <div class="textarea-wrapper">
+                <textarea id="outputArea" readonly placeholder="Result will appear here..."></textarea>
+                <button class="expand-btn" data-target="outputArea">⤢</button>
+            </div>
+        </main>
+        
+        <footer>
+            <div class="footer-left">
+                <button id="copyBtn">Copy Result</button>
+                <label class="switch">
+                    <input type="checkbox" id="watchToggle">
+                    <span class="slider"></span>
+                    <span class="label-text">Watch Clipboard</span>
+                </label>
+            </div>
+            <div class="hotkey-display" id="hotkeySetting">
+                <span id="hotkeyLabel">...</span>
+            </div>
+        </footer>
+    </div>
+    
+    <!-- Bubble Overlay -->
+    <div id="bubbleOverlay" class="bubble-overlay hidden">
+        <div class="bubble-content">
+            <textarea id="bubbleTextarea"></textarea>
+            <button id="closeBubble">✕</button>
+        </div>
+    </div>
+
+    <script src="renderer.js"></script>
+</body>
+</html>
