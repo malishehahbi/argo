@@ -1,5 +1,6 @@
 const inputArea = document.getElementById('inputArea');
 const outputArea = document.getElementById('outputArea');
+const clearBtn = document.getElementById('clearBtn');
 const pinBtn = document.getElementById('pinBtn');
 const hideBtn = document.getElementById('hideBtn');
 const copyBtn = document.getElementById('copyBtn');
@@ -10,20 +11,31 @@ const bubbleOverlay = document.getElementById('bubbleOverlay');
 const bubbleTextarea = document.getElementById('bubbleTextarea');
 const closeBubble = document.getElementById('closeBubble');
 const expandBtns = document.querySelectorAll('.expand-btn');
+const header = document.getElementById('header');
 
 let isPinned = false;
 let isRecordingHotkey = false;
 
+// Disable double-click maximize
+header.addEventListener('dblclick', (e) => {
+    e.preventDefault();
+});
+
 // Initialize
 async function init() {
-    const hotkey = await window.api.getHotkey();
-    updateHotkeyDisplay(hotkey);
-    
-    const watchState = await window.api.getWatchState();
-    watchToggle.checked = watchState;
+    try {
+        const hotkey = await window.api.getHotkey();
+        updateHotkeyDisplay(hotkey);
+        
+        const watchState = await window.api.getWatchState();
+        watchToggle.checked = watchState;
+    } catch (err) {
+        console.error('Initialization error:', err);
+    }
 }
 
 function updateHotkeyDisplay(hotkey) {
+    if (!hotkey) return;
     hotkeyLabel.innerText = hotkey
         .replace('CommandOrControl', 'Ctrl')
         .replace('Control', 'Ctrl')
@@ -35,11 +47,24 @@ init();
 // Text Fixing
 inputArea.addEventListener('input', async () => {
     const text = inputArea.value;
-    if (text) {
-        const fixed = await window.api.fixText(text);
-        outputArea.value = fixed;
-    } else {
-        outputArea.value = '';
+    try {
+        if (text) {
+            const fixed = await window.api.fixText(text);
+            outputArea.value = fixed;
+        } else {
+            outputArea.value = '';
+        }
+    } catch (err) {
+        console.error('Error fixing text:', err);
+    }
+});
+
+// Clear All
+clearBtn.addEventListener('click', () => {
+    inputArea.value = '';
+    outputArea.value = '';
+    if (!bubbleOverlay.classList.contains('hidden')) {
+        bubbleTextarea.value = '';
     }
 });
 
@@ -48,6 +73,7 @@ pinBtn.addEventListener('click', () => {
     isPinned = !isPinned;
     window.api.pinWindow(isPinned);
     pinBtn.classList.toggle('active', isPinned);
+    // SVG color handling
     pinBtn.style.color = isPinned ? 'var(--accent-color)' : '#86868b';
 });
 
@@ -72,12 +98,22 @@ copyBtn.addEventListener('click', async () => {
         }, 1500);
     } catch (err) {
         console.error('Failed to copy!', err);
+        copyBtn.innerText = 'Failed';
+        copyBtn.style.background = '#ff3b30';
+        setTimeout(() => {
+            copyBtn.innerText = 'Copy Result';
+            copyBtn.style.background = 'var(--accent-color)';
+        }, 1500);
     }
 });
 
 // Toggle Watch
 watchToggle.addEventListener('change', async () => {
-    await window.api.toggleWatch(watchToggle.checked);
+    try {
+        await window.api.toggleWatch(watchToggle.checked);
+    } catch (err) {
+        console.error('Toggle watch error:', err);
+    }
 });
 
 // Hotkey Recording
@@ -106,15 +142,19 @@ window.addEventListener('keydown', async (e) => {
         
         const newHotkey = [...new Set(modifiers), key].join('+');
             
-        const success = await window.api.updateHotkey(newHotkey);
-        if (success) {
-            updateHotkeyDisplay(newHotkey);
-        } else {
-            hotkeyLabel.innerText = 'Invalid';
-            setTimeout(async () => {
-                const h = await window.api.getHotkey();
-                updateHotkeyDisplay(h);
-            }, 1000);
+        try {
+            const success = await window.api.updateHotkey(newHotkey);
+            if (success) {
+                updateHotkeyDisplay(newHotkey);
+            } else {
+                hotkeyLabel.innerText = 'Invalid';
+                setTimeout(async () => {
+                    const h = await window.api.getHotkey();
+                    updateHotkeyDisplay(h);
+                }, 1000);
+            }
+        } catch (err) {
+            console.error('Update hotkey error:', err);
         }
         
         isRecordingHotkey = false;
@@ -144,8 +184,12 @@ bubbleTextarea.addEventListener('input', async () => {
         currentTargetArea.value = bubbleTextarea.value;
         // Trigger manual fix if it's the input area
         if (currentTargetArea.id === 'inputArea') {
-            const fixed = await window.api.fixText(bubbleTextarea.value);
-            outputArea.value = fixed;
+            try {
+                const fixed = await window.api.fixText(bubbleTextarea.value);
+                outputArea.value = fixed;
+            } catch (err) {
+                console.error('Error fixing text from bubble:', err);
+            }
         }
     }
 });
