@@ -2,3 +2,4 @@ node_modules
 .agents
 skills-lock.json
 dist
+argo.af

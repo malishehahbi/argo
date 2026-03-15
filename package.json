@@ -22,7 +22,7 @@
   },
   "build": {
     "appId": "com.neorw.argo",
-    "productName": "Argo by neorw",
+    "productName": "Argo ⓒ",
     "directories": {
       "output": "dist"
     },
@@ -31,12 +31,12 @@
         "nsis",
         "portable"
       ],
-      "icon": "assets/icon.ico"
+      "icon": "assets/icon.png"
     },
     "nsis": {
       "oneClick": false,
       "allowToChangeInstallationDirectory": true,
-      "shortcutName": "Argo by neorw",
+      "shortcutName": "Argo ⓒ",
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true,
       "runAfterFinish": true
