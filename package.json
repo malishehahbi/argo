@@ -14,7 +14,7 @@
     "@nut-tree-fork/nut-js": "^4.2.6",
     "arabic-reshaper": "^1.1.0",
     "bidi-js": "^1.0.3",
-    "electron-store": "^11.0.2"
+    "electron-store": "^8.1.0"
   },
   "devDependencies": {
     "electron": "^34.0.0",
@@ -27,12 +27,23 @@
       "output": "dist"
     },
     "win": {
-      "target": "portable",
-      "icon": "assets/tray-icon.png"
+      "target": [
+        "nsis",
+        "portable"
+      ],
+      "icon": "assets/icon.ico"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "shortcutName": "Argo by neorw",
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "runAfterFinish": true
     },
     "mac": {
       "target": "dmg",
-      "icon": "assets/tray-icon.png",
+      "icon": "assets/icon.png",
       "category": "public.app-category.utilities"
     },
     "files": [

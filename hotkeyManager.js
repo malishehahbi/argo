@@ -1,6 +1,6 @@
 const { globalShortcut } = require('electron');
 const Store = require('electron-store');
-const store = new (Store.default || Store)();
+const store = new Store();
 
 let currentHotkey = store.get('hotkey', 'Alt+=');
 

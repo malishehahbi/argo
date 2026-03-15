@@ -8,7 +8,7 @@ const { fixArabic } = require('./textFixer');
 const { startWatching, stopWatching } = require('./clipboardWatcher');
 const { registerHotkey, updateHotkey, getHotkey } = require('./hotkeyManager');
 
-const store = new (Store.default || Store)();
+const store = new Store();
 let mainWindow;
 let tray;
 let isPinned = store.get('isPinned', true);
