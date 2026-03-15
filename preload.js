@@ -8,5 +8,6 @@ contextBridge.exposeInMainWorld('api', {
     getHotkey: () => ipcRenderer.invoke('get-hotkey'),
     updateHotkey: (val) => ipcRenderer.invoke('update-hotkey', val),
     getWatchState: () => ipcRenderer.invoke('get-watch-state'),
-    onClipboardFixed: (callback) => ipcRenderer.on('clipboard-fixed', (event, text) => callback(text))
+    onClipboardFixed: (callback) => ipcRenderer.on('clipboard-fixed', (event, text) => callback(text)),
+    onWatchStateChanged: (callback) => ipcRenderer.on('watch-state-changed', (event, val) => callback(val))
 });

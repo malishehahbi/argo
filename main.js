@@ -24,6 +24,8 @@ function createWindow() {
         frame: false,
         transparent: false,
         resizable: false,
+        maximizable: false,
+        fullscreenable: false,
         alwaysOnTop: isPinned,
         skipTaskbar: false, // Show in taskbar when visible
         webPreferences: {
@@ -98,6 +100,12 @@ function createTray() {
 function toggleWatch(val) {
     isWatching = val;
     store.set('isWatching', val);
+    
+    // Notify renderer to sync UI
+    if (mainWindow) {
+        mainWindow.webContents.send('watch-state-changed', val);
+    }
+
     if (isWatching) {
         startWatching((fixed) => {
             if (mainWindow) mainWindow.webContents.send('clipboard-fixed', fixed);

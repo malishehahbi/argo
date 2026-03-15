@@ -215,3 +215,8 @@ window.api.onClipboardFixed((text) => {
         bubbleTextarea.value = text;
     }
 });
+
+// Watch State Changed event from Main (Tray Sync)
+window.api.onWatchStateChanged((val) => {
+    watchToggle.checked = val;
+});
