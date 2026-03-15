@@ -3,6 +3,7 @@ const { contextBridge, ipcRenderer } = require('electron');
 contextBridge.exposeInMainWorld('api', {
     hideWindow: () => ipcRenderer.send('window-hide'),
     pinWindow: (val) => ipcRenderer.send('window-pin', val),
+    getPinState: () => ipcRenderer.invoke('get-pin-state'),
     fixText: (text) => ipcRenderer.invoke('fix-text', text),
     toggleWatch: (val) => ipcRenderer.invoke('toggle-watch', val),
     getHotkey: () => ipcRenderer.invoke('get-hotkey'),

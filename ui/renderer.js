@@ -29,6 +29,10 @@ async function init() {
         
         const watchState = await window.api.getWatchState();
         watchToggle.checked = watchState;
+
+        isPinned = await window.api.getPinState();
+        pinBtn.classList.toggle('active', isPinned);
+        pinBtn.style.color = isPinned ? 'var(--accent-color)' : '#86868b';
     } catch (err) {
         console.error('Initialization error:', err);
     }

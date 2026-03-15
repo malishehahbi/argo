@@ -11,11 +11,8 @@ const { registerHotkey, updateHotkey, getHotkey } = require('./hotkeyManager');
 const store = new (Store.default || Store)();
 let mainWindow;
 let tray;
-let isPinned = false;
+let isPinned = store.get('isPinned', true);
 let isWatching = store.get('isWatching', false);
-
-// Performance optimization: disable hardware acceleration if needed, but for small app it's fine.
-// app.disableHardwareAcceleration();
 
 function createWindow() {
     mainWindow = new BrowserWindow({
@@ -27,18 +24,19 @@ function createWindow() {
         maximizable: false,
         fullscreenable: false,
         alwaysOnTop: isPinned,
-        skipTaskbar: false, // Show in taskbar when visible
+        skipTaskbar: false,
+        icon: path.join(__dirname, 'assets/icon.png'),
         webPreferences: {
             preload: path.join(__dirname, 'preload.js'),
             nodeIntegration: false,
             contextIsolation: true,
-            backgroundThrottling: false, // Ensure clipboard watcher runs well
+            backgroundThrottling: false,
         },
     });
 
     mainWindow.loadFile(path.join(__dirname, 'ui/index.html'));
 
-    // Performance: Remove menu
+    // Remove menu
     mainWindow.setMenu(null);
 
     // DevTools disabled in production
@@ -54,23 +52,24 @@ function createWindow() {
 }
 
 function createTray() {
-    // Using a simple transparent icon or a placeholder
-    // In a real scenario, you'd have tray-icon.png in assets/
-    const iconPath = path.join(__dirname, 'assets/tray-icon.png');
+    const iconPath = path.join(__dirname, 'assets/icon.png');
     
-    // Check if icon exists, otherwise it might crash or show nothing
     try {
         tray = new Tray(iconPath);
     } catch (e) {
-        // Fallback or empty tray icon
         console.error("Tray icon not found at", iconPath);
-        // Create an empty tray if possible or handle gracefully
-        // For development, we might not have the PNG yet
     }
 
     if (tray) {
         const contextMenu = Menu.buildFromTemplate([
-            { label: 'Show Argo by neorw', click: () => mainWindow ? mainWindow.show() : createWindow() },
+            { label: 'Show Argo by neorw', click: () => {
+                if (mainWindow) {
+                    mainWindow.show();
+                    mainWindow.focus();
+                } else {
+                    createWindow();
+                }
+            }},
             { 
                 label: 'Toggle Clipboard Watch', 
                 type: 'checkbox', 
@@ -87,9 +86,15 @@ function createTray() {
         tray.setToolTip('Argo by neorw');
         tray.setContextMenu(contextMenu);
 
-        tray.on('double-click', () => {
+        // Single click toggle
+        tray.on('click', () => {
             if (mainWindow) {
-                mainWindow.isVisible() ? mainWindow.hide() : mainWindow.show();
+                if (mainWindow.isVisible()) {
+                    mainWindow.hide();
+                } else {
+                    mainWindow.show();
+                    mainWindow.focus();
+                }
             } else {
                 createWindow();
             }
@@ -117,7 +122,14 @@ function toggleWatch(val) {
     // Sync tray menu if it exists
     if (tray) {
         const contextMenu = Menu.buildFromTemplate([
-            { label: 'Show Argo by neorw', click: () => mainWindow ? mainWindow.show() : createWindow() },
+            { label: 'Show Argo by neorw', click: () => {
+                if (mainWindow) {
+                    mainWindow.show();
+                    mainWindow.focus();
+                } else {
+                    createWindow();
+                }
+            }},
             { 
                 label: 'Toggle Clipboard Watch', 
                 type: 'checkbox', 
@@ -145,7 +157,9 @@ app.whenReady().then(() => {
 
     // Initialize clipboard watch state
     if (isWatching) {
-        toggleWatch(true);
+        startWatching((fixed) => {
+            if (mainWindow) mainWindow.webContents.send('clipboard-fixed', fixed);
+        });
     }
 });
 
@@ -167,7 +181,12 @@ ipcMain.on('window-hide', () => {
 
 ipcMain.on('window-pin', (event, val) => {
     isPinned = val;
+    store.set('isPinned', val);
     if (mainWindow) mainWindow.setAlwaysOnTop(isPinned);
+});
+
+ipcMain.handle('get-pin-state', () => {
+    return isPinned;
 });
 
 ipcMain.handle('fix-text', (event, text) => {

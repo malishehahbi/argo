@@ -2,7 +2,7 @@ const { globalShortcut } = require('electron');
 const Store = require('electron-store');
 const store = new (Store.default || Store)();
 
-let currentHotkey = store.get('hotkey', 'CommandOrControl+Shift+X');
+let currentHotkey = store.get('hotkey', 'Alt+=');
 
 function registerHotkey(onTrigger) {
     // Unregister everything before re-registering

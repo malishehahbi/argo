@@ -7,26 +7,33 @@ let watchInterval = null;
 function startWatching(onFixCallback) {
     if (watchInterval) return;
     
-    // Initialize with current clipboard to avoid immediate re-fix
+    // Initialize with current clipboard
     lastText = clipboard.readText();
 
     watchInterval = setInterval(() => {
-        const text = clipboard.readText();
-        
-        if (text && text !== lastText) {
-            // Arabic detection regex: /[\u0600-\u06FF]/
-            if (/[\u0600-\u06FF]/.test(text)) {
-                const fixed = fixArabic(text);
-                
-                // Only write back if it actually changed
-                if (fixed !== text) {
-                    clipboard.writeText(fixed);
-                    lastText = fixed;
-                    if (onFixCallback) onFixCallback(fixed);
-                    return;
+        try {
+            const text = clipboard.readText();
+            
+            // Only proceed if clipboard text changed
+            if (text && text !== lastText) {
+                // Arabic detection regex: /[\u0600-\u06FF]/
+                if (/[\u0600-\u06FF]/.test(text)) {
+                    const fixed = fixArabic(text);
+                    
+                    // Only write back if it actually changed during fixing
+                    if (fixed !== text) {
+                        clipboard.writeText(fixed);
+                        // Update lastText to the fixed version to avoid loop
+                        lastText = fixed;
+                        if (onFixCallback) onFixCallback(fixed);
+                        return;
+                    }
                 }
+                // Even if not Arabic, update lastText to track it
+                lastText = text;
             }
-            lastText = text;
+        } catch (err) {
+            console.error('Clipboard watcher error:', err);
         }
     }, 500);
 }

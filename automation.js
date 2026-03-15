@@ -6,26 +6,45 @@ async function autoFix() {
     try {
         const modifier = process.platform === 'darwin' ? Key.LeftSuper : Key.LeftControl;
         
-        // Short delay to avoid key conflicts
-        await new Promise(r => setTimeout(r, 100));
+        // 1. Reduced delay for faster response (200ms instead of 500ms)
+        await new Promise(r => setTimeout(r, 200));
 
-        // 1. Copy selected text
-        await keyboard.type(modifier, Key.C);
-        
-        // 2. Wait for clipboard to update
-        await new Promise(r => setTimeout(r, 150));
-        
-        const originalText = clipboard.readText();
-        if (!originalText || !originalText.trim()) return;
+        // 2. Faster canary check
+        const canary = `A_${Date.now()}`;
+        clipboard.writeText(canary);
 
-        // 3. Fix Arabic
+        // 3. Perform Copy (Manual sequence is usually most reliable)
+        await keyboard.pressKey(modifier);
+        await keyboard.pressKey(Key.C);
+        await new Promise(r => setTimeout(r, 20)); // Micro delay
+        await keyboard.releaseKey(Key.C);
+        await keyboard.releaseKey(modifier);
+        
+        // 4. Faster Polling (check every 30ms, max 15 tries = 450ms total wait)
+        let originalText = '';
+        for (let i = 0; i < 15; i++) {
+            await new Promise(r => setTimeout(r, 30));
+            originalText = clipboard.readText();
+            if (originalText && originalText !== canary) break;
+        }
+
+        if (!originalText || originalText === canary || !originalText.trim()) return;
+        if (!/[\u0600-\u06FF]/.test(originalText)) return;
+
+        // 5. Fix Arabic (Fast CPU operation)
         const fixedText = fixArabic(originalText);
-        
-        // 4. Update clipboard
         clipboard.writeText(fixedText);
         
-        // 5. Paste corrected text
-        await keyboard.type(modifier, Key.V);
+        // 6. Minimal delay before paste
+        await new Promise(r => setTimeout(r, 50));
+        
+        // 7. Perform Paste
+        await keyboard.pressKey(modifier);
+        await keyboard.pressKey(Key.V);
+        await new Promise(r => setTimeout(r, 20));
+        await keyboard.releaseKey(Key.V);
+        await keyboard.releaseKey(modifier);
+
     } catch (err) {
         console.error('Automation error:', err);
     }
